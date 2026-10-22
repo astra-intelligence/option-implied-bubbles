@@ -15,7 +15,7 @@ Reproducible: `python3 scripts/render-og.py` regenerates public/og.png.
 from __future__ import annotations
 
 import json
-import math
+import os
 import urllib.request
 from pathlib import Path
 
@@ -45,7 +45,8 @@ ACCENT = "#f59e0b"  # tau3 series colour from the dark Plotly palette
 ACCENT_DIM = "#b8860b"
 GRID = "#1e293b"
 
-FONT_DIR = Path("/home/paperclip/.fonts")
+# Montserrat static TTFs (Montserrat-Regular.ttf etc.). Override with OG_FONT_DIR.
+FONT_DIR = Path(os.environ.get("OG_FONT_DIR", "~/.fonts")).expanduser()
 
 
 def font(size: int, weight: str = "Regular") -> ImageFont.FreeTypeFont:
@@ -106,8 +107,7 @@ def render(series: list[float]) -> None:
     d.text((96, 218), f"{sign}{last:.1f}%", font=f_num, fill=ACCENT)
 
     sub = (
-        f"of spot price at the ~1y horizon  ·  {pct:.0f}th percentile "
-        f"of its 1996–2023 history"
+        f"of spot price at the ~1y horizon  ·  {pct:.0f}th percentile since 1996"
     )
     d.text((96, 344), sub, font=f_med, fill=INK)
 
@@ -148,11 +148,11 @@ def render(series: list[float]) -> None:
     hx = chart_x1 - d.textlength(fmt(hi), font=f_micro)
     d.text((hx, chart_y0 - 30), fmt(hi), font=f_micro, fill=MUTED)
 
-    # Footer: site URL pill.
+    # Site URL pill, beside the headline number and clear of the sparkline.
     url = "financial-bubble.vercel.app"
     pill_w = int(d.textlength(url, font=f_small)) + 56
     pill_h = 56
-    pill_x, pill_y = W - 96 - pill_w, H - 48 - 28 - pill_h
+    pill_x, pill_y = W - 96 - pill_w, 246
     d.rounded_rectangle(
         [pill_x, pill_y, pill_x + pill_w, pill_y + pill_h],
         radius=28,
